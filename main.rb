@@ -19,8 +19,9 @@ class QbtClient
     set_cookie! user, password
   end
 
-  def api_version
-    get! "/version/api"
+  def download_limit=(n)
+    $stderr.puts "setting download limit to: %d bytes" % n
+    post! "/command/setGlobalDlLimit", {'limit' => n.to_s}
   end
 
   def pause_downloading
@@ -46,13 +47,17 @@ class QbtClient
   end
 
   private def hash_request!(path, t)
-    req = new_req :Post, path
-    req.form_data = {'hash' => t.fetch("hash")}
-    request! req
+    post! path, 'hash' => t.fetch("hash")
   end
 
   private def get!(path)
     request!(new_req :Get, path).body
+  end
+
+  private def post!(path, data)
+    req = new_req :Post, path
+    req.form_data = data
+    request! req
   end
 
   private def set_cookie!(user, password)
@@ -108,9 +113,11 @@ module Commands
       % [avail, block_size, is_lower ? "<" : ">=", min, block_size]
     if is_lower
       $stderr.puts "pausing downloading torrents"
+      qbt.download_limit = 1024
       qbt.pause_downloading
     else
       $stderr.puts "resuming downloading torrents"
+      qbt.download_limit = 0
       qbt.resume_downloading
     end
   end
