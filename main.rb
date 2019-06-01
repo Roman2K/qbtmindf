@@ -21,7 +21,7 @@ class QbtClient
 
   def download_limit=(n)
     $stderr.puts "setting download limit to: %d bytes" % n
-    post! "/command/setGlobalDlLimit", {'limit' => n.to_s}
+    post! "/command/setGlobalDlLimit", 'limit' => n
   end
 
   def pause_downloading
@@ -33,25 +33,27 @@ class QbtClient
   end
 
   private def downloading
-    JSON.parse get! "/query/torrents?filter=downloading"
+    JSON.parse(get!("/query/torrents?filter=downloading").body).tap do |dls|
+      $stderr.puts "fetched %d downloading torrents" % dls.size
+    end
   end
 
   private def pause(t)
     $stderr.puts "pausing torrent: %s" % t.fetch("name")
-    hash_request! "/command/pause", t
+    post_hash! "/command/pause", t
   end
 
   private def resume(t)
     $stderr.puts "resuming torrent: %s" % t.fetch("name")
-    hash_request! "/command/resume", t
+    post_hash! "/command/resume", t
   end
 
-  private def hash_request!(path, t)
+  private def post_hash!(path, t)
     post! path, 'hash' => t.fetch("hash")
   end
 
   private def get!(path)
-    request!(new_req :Get, path).body
+    request! new_req(:Get, path)
   end
 
   private def post!(path, data)
