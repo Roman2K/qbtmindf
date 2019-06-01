@@ -20,7 +20,7 @@ class QbtClient
   end
 
   def download_limit=(n)
-    $stderr.puts "setting download limit to: %d bytes" % n
+    $stderr.puts "DEBUG setting download limit to: %d bytes" % n
     post! "/command/setGlobalDlLimit", 'limit' => n
   end
 
@@ -34,17 +34,17 @@ class QbtClient
 
   private def downloading
     JSON.parse(get!("/query/torrents?filter=downloading").body).tap do |dls|
-      $stderr.puts "fetched %d downloading torrents" % dls.size
+      $stderr.puts "DEBUG fetched %d downloading torrents" % dls.size
     end
   end
 
   private def pause(t)
-    $stderr.puts "pausing torrent: %s" % t.fetch("name")
+    $stderr.puts "DEBUG pausing torrent: %s" % t.fetch("name")
     post_hash! "/command/pause", t
   end
 
   private def resume(t)
-    $stderr.puts "resuming torrent: %s" % t.fetch("name")
+    $stderr.puts "DEBUG resuming torrent: %s" % t.fetch("name")
     post_hash! "/command/resume", t
   end
 
@@ -109,16 +109,24 @@ module Commands
   def self.cmd_check_min(mnt, min, block_size, qbt_url)
     min = min.to_f
     avail = df mnt, block_size
-    qbt = QbtClient.new URI(qbt_url)
+    qbt = begin
+      Timeout.timeout(2) do
+        QbtClient.new URI(qbt_url)
+      end
+    rescue Timeout::Error
+      $stderr.puts " WARN qBitTorrent HTTP API seems unavailable, aborting"
+      exit 0
+    end
     is_lower = avail < min
-    $stderr.puts "available (%d%s) %s minimum (%d%s)" \
+    $stderr.puts " INFO available (%d%s) %s minimum (%d%s)" \
       % [avail, block_size, is_lower ? "<" : ">=", min, block_size]
+
     if is_lower
-      $stderr.puts "pausing downloading torrents"
+      $stderr.puts " INFO pausing downloading torrents"
       qbt.download_limit = 1024
       qbt.pause_downloading
     else
-      $stderr.puts "resuming downloading torrents"
+      $stderr.puts " INFO resuming downloading torrents"
       qbt.download_limit = 0
       qbt.resume_downloading
     end
