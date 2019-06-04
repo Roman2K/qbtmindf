@@ -4,6 +4,12 @@ GIT
   specs:
     metacli (0.1.0)
 
+GIT
+  remote: git://github.com/Roman2K/qbittorrent-ruby.git
+  revision: 0fb060e85b938b3325416a730f57d2aa20567bdc
+  specs:
+    qbittorrent-ruby (0.1.0)
+
 GEM
   remote: https://rubygems.org/
   specs:
@@ -13,6 +19,7 @@ PLATFORMS
 
 DEPENDENCIES
   metacli!
+  qbittorrent-ruby!
 
 BUNDLED WITH
    2.0.1
