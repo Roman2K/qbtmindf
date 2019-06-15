@@ -1,1 +1,1 @@
-*/1 * * * * cd code/qbtmindf && ./cronjob
+* * * * * cd code/qbtmindf && ./cronjob
