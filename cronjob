@@ -10,6 +10,6 @@ set -eo pipefail
         bundle exec ruby main.rb check_min \
           ~/windata \
           2048 M \
-          'http://admin:adminqbit@winpc:8080'
+          'http://admin:adminqbit@winpc.home:8080'
   "
 } 2>&1 | tee /tmp/qbtmindf_cronjob.log
