@@ -1,14 +1,12 @@
-require 'timeout'
 require 'utils'
 
 module Commands
   def self.cmd_check_min(mnt, min, block_size, qbt_url)
     min = min.to_f
     qbt = begin
-      Timeout.timeout 10 do
-        Utils::QBitTorrent.new URI(qbt_url)
-      end
-    rescue Timeout::Error
+      Utils::QBitTorrent.new URI(qbt_url)
+    rescue => err
+      Utils.is_unavail?(err) or raise
       $stderr.puts " WARN qBitTorrent HTTP API seems unavailable, aborting"
       exit 0
     end
