@@ -2,26 +2,27 @@ require 'utils'
 
 module Commands
   def self.cmd_check_min(mnt, min, block_size, qbt_url)
+    log = Utils::Log.new
     min = min.to_f
     qbt = begin
       Utils::QBitTorrent.new URI(qbt_url)
     rescue => err
       Utils.is_unavail?(err) or raise
-      $stderr.puts " WARN qBitTorrent HTTP API seems unavailable, aborting"
+      log.debug "qBitTorrent HTTP API seems unavailable, aborting"
       exit 0
     end
-    avail = Utils.df mnt, block_size
 
+    avail = Utils.df mnt, block_size
     is_lower = avail < min
-    $stderr.puts " INFO available (%d%s) %s minimum (%d%s)" \
+    log.info "available (%d%s) %s minimum (%d%s)" \
       % [avail, block_size, is_lower ? "<" : ">=", min, block_size]
 
     if is_lower
-      $stderr.puts " INFO pausing downloading torrents"
+      log.info "pausing downloading torrents"
       qbt.download_limit = 1024
       qbt.pause_downloading
     else
-      $stderr.puts " INFO resuming downloading torrents"
+      log.info "resuming downloading torrents"
       qbt.download_limit = 0
       qbt.resume_downloading
     end
