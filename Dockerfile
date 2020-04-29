@@ -23,4 +23,4 @@ RUN addgroup -g 1000 -S app \
 
 USER app
 WORKDIR /app
-ENTRYPOINT ["./docker/entrypoint"]
+ENTRYPOINT ["bundle", "exec", "ruby", "main.rb", "check_min"]
