@@ -22,11 +22,9 @@ class Commands
 
     if is_lower
       @log.info "pausing downloading torrents"
-      qbt.download_limit = 1024
       qbt.pause_downloading
     else
       @log.info "resuming downloading torrents"
-      qbt.download_limit = 0
       qbt.resume_downloading
     end
   end
